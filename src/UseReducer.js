@@ -2,48 +2,31 @@ import React from "react";
 
 const SECURITY_CODE = "paradigma";
 
-function UseState({ name }) {
-  const [state, _setState] = React.useState({
-    value: "",
-    error: false,
-    loading: false,
-    deleted: false,
-    confirmed: false,
-  });
-
-  const setState = (state) => {
-    _setState((prevState) => ({ ...prevState, ...state }));
-  };
+function UseReducer({ name }) {
+  const [state, dispatch] = React.useReducer(reducer, initialState);
 
   const onConfirm = () => {
-    setState({
-      error: false,
-      loading: false,
-      confirmed: true,
-    });
+    dispatch({ type: actionTypes.confirm });
   };
 
   const onError = () => {
-    setState({
-      error: true,
-      loading: false,
-    });
-  };
-
-  const onWrite = (event) => {
-    setState({ value: event.target.value });
+    dispatch({ type: actionTypes.error });
   };
 
   const onCheck = () => {
-    setState({ loading: true });
+    dispatch({ type: actionTypes.check });
   };
 
   const onDelete = () => {
-    setState({ deleted: true });
+    dispatch({ type: actionTypes.delete });
   };
 
   const onReset = () => {
-    setState({ confirmed: false, deleted: false, value: "" });
+    dispatch({ type: actionTypes.reset });
+  };
+
+  const onWrite = ({ target: { value } }) => {
+    dispatch({ type: actionTypes.write, payload: value });
   };
 
   React.useEffect(() => {
@@ -92,4 +75,57 @@ function UseState({ name }) {
   }
 }
 
-export { UseState };
+const initialState = {
+  value: "",
+  error: false,
+  loading: false,
+  deleted: false,
+  confirmed: false,
+};
+
+const actionTypes = {
+  confirm: "CONFIRM",
+  error: "ERROR",
+  check: "CHECK",
+  delete: "DELETE",
+  reset: "RESET",
+  write: "WRITE",
+};
+
+const reducerObject = (state, payload) => ({
+  [actionTypes.error]: {
+    ...state,
+    error: true,
+    loading: false,
+  },
+  [actionTypes.check]: {
+    ...state,
+    loading: true,
+  },
+  [actionTypes.confirm]: {
+    ...state,
+    error: false,
+    loading: false,
+    confirmed: true,
+  },
+  [actionTypes.delete]: {
+    ...state,
+    deleted: true,
+  },
+  [actionTypes.reset]: {
+    ...state,
+    confirmed: false,
+    deleted: false,
+    value: "",
+  },
+  [actionTypes.write]: {
+    ...state,
+    value: payload,
+  },
+});
+
+const reducer = (state, action) => {
+  return reducerObject(state, action.payload)[action.type] || state;
+};
+
+export { UseReducer };
